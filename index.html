@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ziizi - Arab Expatriate Portal</title>
+    <script>
+      // Fix for libraries that expect Node.js globals
+      window.global = window;
+      window.process = { env: { NODE_ENV: 'development' } };
+      
+      // Prevent errors when libraries try to overwrite read-only window.fetch
+      const originalFetch = window.fetch;
+      try {
+        Object.defineProperty(window, 'fetch', {
+          configurable: true,
+          enumerable: true,
+          get: () => originalFetch,
+          set: () => { console.warn('Attempt to overwrite window.fetch ignored.'); }
+        });
+      } catch (e) {
+        console.warn('Could not redefine window.fetch, but continuing...');
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
