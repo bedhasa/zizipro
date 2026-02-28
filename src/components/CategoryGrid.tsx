@@ -28,6 +28,7 @@ export default function CategoryGrid({ lang }: CategoryGridProps) {
             return (
               <motion.div
                 key={cat.id}
+                id={cat.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

@@ -6,21 +6,36 @@
     <title>Ziizi - Arab Expatriate Portal</title>
     <script>
       // Fix for libraries that expect Node.js globals
-      window.global = window;
-      window.process = { env: { NODE_ENV: 'development' } };
+      (function() {
+        const existingProcess = window.process || {};
+        const existingEnv = existingProcess.env || {};
+        
+        window.process = { 
+          ...existingProcess,
+          env: { 
+            NODE_ENV: 'development',
+            ...existingEnv,
+          },
+          version: 'v16.0.0',
+          nextTick: (cb) => setTimeout(cb, 0)
+        };
+      })();
       
-      // Prevent errors when libraries try to overwrite read-only window.fetch
-      const originalFetch = window.fetch;
-      try {
-        Object.defineProperty(window, 'fetch', {
-          configurable: true,
-          enumerable: true,
-          get: () => originalFetch,
-          set: () => { console.warn('Attempt to overwrite window.fetch ignored.'); }
-        });
-      } catch (e) {
-        console.warn('Could not redefine window.fetch, but continuing...');
-      }
+      // Create a 'global' object that doesn't directly proxy 'set' operations to 'window'
+      // This prevents "Cannot set property fetch of #<Window>" errors
+      const globalTarget = {};
+      window.global = new Proxy(globalTarget, {
+        get(target, prop) {
+          if (prop === 'global') return window.global;
+          if (prop === 'process') return window.process;
+          if (prop in target) return target[prop];
+          return window[prop];
+        },
+        set(target, prop, value) {
+          target[prop] = value;
+          return true;
+        }
+      });
     </script>
   </head>
   <body>

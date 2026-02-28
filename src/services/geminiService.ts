@@ -1,6 +1,19 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+let aiInstance: GoogleGenAI | null = null;
+
+function getAi() {
+  if (!aiInstance) {
+    // Priority: 1. process.env (Vite define) 2. window.process.env (Polyfill)
+    const apiKey = process.env.GEMINI_API_KEY || (window as any).process?.env?.GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is not set. Please ensure it is configured in your environment.");
+    }
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+}
 
 export async function getChatResponse(message: string, language: 'en' | 'ar') {
   const model = "gemini-3-flash-preview";
@@ -10,6 +23,7 @@ export async function getChatResponse(message: string, language: 'en' | 'ar') {
     : "You are an AI assistant for Ziizi. Your goal is to help Arab expatriates find information about immigration, marriage abroad, work, and travel. Answer in English in a professional and friendly tone.";
 
   try {
+    const ai = getAi();
     const response = await ai.models.generateContent({
       model,
       contents: [{ parts: [{ text: message }] }],
